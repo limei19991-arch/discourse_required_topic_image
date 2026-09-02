@@ -1,0 +1,13 @@
+zh_CN:
+  site_settings:
+    topic_cover_enabled: "启用帖子封面图片"
+    topic_cover_required: "创建普通帖子时必须上传封面图片"
+    topic_cover_min_width: "封面原图最小宽度（像素）"
+    topic_cover_min_height: "封面原图最小高度（像素）"
+    topic_cover_max_width: "压缩后封面的最大宽度（像素）"
+    topic_cover_max_height: "压缩后封面的最大高度（像素）"
+    topic_cover_image_quality: "封面 WebP 压缩质量"
+  discourse_topic_cover:
+    errors:
+      required: "必须上传封面图片。"
+      invalid: "封面图片无效，或该图片不属于当前用户。"

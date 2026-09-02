@@ -1,0 +1,123 @@
+.topic-cover-field {
+  box-sizing: border-box;
+  width: 100%;
+  margin-top: 0.5em;
+  padding: 0.5em 0.75em;
+  border: 1px solid var(--primary-low);
+  border-radius: var(--d-border-radius);
+  background: var(--secondary);
+
+  &__label {
+    display: block;
+    margin-bottom: 0.35em;
+    font-weight: 600;
+  }
+
+  &__required {
+    color: var(--danger);
+  }
+
+  &__help {
+    margin-top: 0.35em;
+    color: var(--primary-medium);
+    font-size: var(--font-down-1);
+  }
+
+  .file-uploader__preview {
+    width: min(100%, 8rem);
+    height: 3.5rem;
+    min-height: 0;
+    aspect-ratio: auto;
+  }
+
+  .file-uploader__controls .btn-transparent {
+    padding: 0.25em 0.4em;
+    font-size: var(--font-down-1);
+    line-height: 1.15;
+  }
+
+  // A cover is required. Existing covers can be replaced but not removed.
+  .file-uploader__controls .btn-danger {
+    display: none;
+  }
+}
+
+.topic-cover-main-row {
+  box-sizing: border-box;
+  display: flex;
+  width: 100%;
+  margin: 0 0 1em;
+  justify-content: center;
+
+  &__image {
+    display: block;
+    width: auto;
+    min-width: min(100%, 20rem);
+    max-width: min(100%, 60rem);
+    min-height: 10rem;
+    max-height: min(60vh, 40rem);
+    border-radius: var(--d-border-radius);
+    background: var(--primary-very-low);
+    object-fit: contain;
+  }
+}
+
+// On desktop, align the cover to the post body column instead of centering it
+// inside the wider browser/main-outlet area (which also contains navigation).
+@media screen and (min-width: 700px) {
+  .topic-cover-main-row {
+    width: min(
+      calc(
+        var(--topic-body-width, 100%) + var(--topic-body-width-padding, 0px) +
+          var(--topic-body-width-padding, 0px)
+      ),
+      calc(100% - var(--topic-avatar-width, 0px))
+    );
+    margin-inline-start: var(--topic-avatar-width, 0px);
+    margin-inline-end: auto;
+  }
+}
+
+
+#reply-control.open .reply-area {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.topic-cover-publish-progress {
+  min-width: 10rem;
+  margin-inline: 0.5em;
+
+  &__track {
+    height: 0.35rem;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--primary-low);
+  }
+
+  &__bar {
+    width: 45%;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--tertiary);
+    animation: topic-cover-publishing 1.1s ease-in-out infinite;
+  }
+
+  &__label {
+    display: block;
+    margin-top: 0.2em;
+    color: var(--primary-medium);
+    font-size: var(--font-down-1);
+  }
+}
+
+@keyframes topic-cover-publishing {
+  from {
+    transform: translateX(-110%);
+  }
+
+  to {
+    transform: translateX(245%);
+  }
+}

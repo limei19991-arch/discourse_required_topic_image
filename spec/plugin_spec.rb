@@ -71,4 +71,24 @@ RSpec.describe "Discourse Topic Cover" do
       I18n.t("discourse_topic_cover.errors.invalid"),
     )
   end
+
+  it "accepts a deduplicated upload associated through UserUpload" do
+    other_user = Fabricate(:user)
+    UserUpload.create!(user: other_user, upload: upload)
+
+    post =
+      PostCreator.create(
+        other_user,
+        title: "A topic with a deduplicated cover",
+        raw: "Topic body text",
+        topic_opts: {
+          custom_fields: {
+            DiscourseTopicCover::UPLOAD_ID_FIELD => upload.id,
+          },
+        },
+      )
+
+    expect(post.errors).to be_empty
+    expect(post.topic.custom_fields[DiscourseTopicCover::UPLOAD_ID_FIELD].to_i).to eq(upload.id)
+  end
 end

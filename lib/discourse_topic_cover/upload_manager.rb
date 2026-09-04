@@ -11,7 +11,14 @@ module DiscourseTopicCover
       upload = Upload.find_by(id: normalized_id)
       return if upload.blank?
       return unless FileHelper.is_supported_image?(upload.original_filename)
-      return if upload.user_id != user.id && !user.staff?
+
+      # Discourse deduplicates uploads by SHA1. When another user uploads the
+      # same image, the Upload keeps its original user_id and Discourse records
+      # the new owner in user_uploads instead.
+      owned_by_user =
+        upload.user_id == user.id || UserUpload.exists?(user_id: user.id, upload_id: upload.id)
+      return unless user.staff? || owned_by_user
+
       return if upload.width.to_i < SiteSetting.topic_cover_min_width
       return if upload.height.to_i < SiteSetting.topic_cover_min_height
 

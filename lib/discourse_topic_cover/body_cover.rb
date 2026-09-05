@@ -4,16 +4,21 @@ module DiscourseTopicCover
   module BodyCover
     def self.find(raw, users)
       return if raw.blank?
+      # The button places an explicit upload ID on the first line. Neither a
+      # random body image nor an old custom-field ID satisfies this contract.
+      match = raw.lines.first.to_s.strip.match(/\A!\[topic-cover-(\d+)\]\(([^\r\n]+)\)\z/)
+      return unless match
+      return unless raw.scan(/^!\[topic-cover-\d+\]\(/).length == 1
 
-      # Parse rendered images only: links and fenced code must not satisfy the rule.
+      id = match[1].to_i
       document = Nokogiri::HTML.fragment(PrettyText.cook(raw))
-      document.css("img[src]").each do |image|
-        Upload.extract_upload_ids(image["src"]).each do |id|
-          Array(users).compact.each do |user|
-            upload = UploadManager.find_valid_upload(id, user)
-            return upload if upload
-          end
-        end
+      images = document.css("img[src]")
+      return unless images.first && Upload.extract_upload_ids(images.first["src"]).include?(id)
+      return unless images.count { |image| Upload.extract_upload_ids(image["src"]).include?(id) } == 1
+
+      Array(users).compact.each do |user|
+        upload = UploadManager.find_valid_upload(id, user)
+        return upload if upload
       end
       nil
     end

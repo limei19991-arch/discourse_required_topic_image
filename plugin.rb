@@ -3,7 +3,7 @@
 # name: discourse-topic-cover
 # about: Adds a required, explicit cover image to Discourse topics.
 # meta_topic_id: 0
-# version: 0.3.0
+# version: 0.4.0
 # authors: rio
 # url: https://github.com/rio/discourse-topic-cover
 # required_version: 3.5.0
@@ -45,8 +45,7 @@ after_initialize do
     next unless topic.regular?
     next if topic_creator.opts[:skip_validations]
 
-    if SiteSetting.topic_cover_required &&
-         !DiscourseTopicCover::BodyCover.find(topic_creator.opts[:raw], topic_creator.user)
+    if !DiscourseTopicCover::BodyCover.find(topic_creator.opts[:raw], topic_creator.user)
       topic.errors.add(:base, I18n.t("discourse_topic_cover.errors.required"))
     end
   end
@@ -55,6 +54,11 @@ after_initialize do
     next unless topic.regular?
 
     upload = DiscourseTopicCover::BodyCover.find(topic_creator.opts[:raw], topic_creator.user)
+    unless upload
+      topic.errors.add(:base, I18n.t("discourse_topic_cover.errors.required"))
+      topic_creator.add_errors_from(topic)
+      raise ActiveRecord::Rollback
+    end
     DiscourseTopicCover::BodyCover.apply(topic, upload)
   end
 
@@ -70,8 +74,7 @@ after_initialize do
 
   add_model_callback(Post, :validate) do
     next unless persisted? && is_first_post? && topic&.regular? && will_save_change_to_raw?
-    if SiteSetting.topic_cover_required &&
-         !DiscourseTopicCover::BodyCover.find(raw, [user, last_editor])
+    if !DiscourseTopicCover::BodyCover.find(raw, [user, last_editor])
       errors.add(:base, I18n.t("discourse_topic_cover.errors.required"))
     end
   end

@@ -2,9 +2,6 @@ plugins:
   topic_cover_enabled:
     default: true
     client: true
-  topic_cover_required:
-    default: true
-    client: true
   topic_cover_min_width:
     default: 480
     min: 1

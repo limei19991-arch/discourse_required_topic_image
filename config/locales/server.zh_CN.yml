@@ -9,5 +9,5 @@ zh_CN:
     topic_cover_image_quality: "封面 WebP 压缩质量"
   discourse_topic_cover:
     errors:
-      required: "请使用正文工具栏上传图片。正文必须包含至少一张符合封面最小尺寸、且属于作者或编辑者的图片。"
+      required: "请通过独立的“上传封面”按钮上传图片，并保留正文第一行的唯一封面。图片须满足最小尺寸及上传归属要求。"
       invalid: "封面图片无效，或该图片不属于当前用户。"

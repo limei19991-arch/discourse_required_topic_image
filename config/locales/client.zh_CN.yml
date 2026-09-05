@@ -2,7 +2,7 @@ zh_CN:
   js:
     topic_cover:
       label: "上传封面图片"
-      help: "上传后会自动插入正文，同时用于主题卡片和瀑布流。"
+      help: "必须上传封面。上传后自动放在正文第一行；再次上传会替换原封面。"
       in_post_alt: "主题封面图片"
       publishing: "正在压缩封面并发布…"
       update_failed: "图片已上传，但未能更新帖子的封面。"

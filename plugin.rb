@@ -3,7 +3,7 @@
 # name: discourse-topic-cover
 # about: Adds a required, explicit cover image to Discourse topics.
 # meta_topic_id: 0
-# version: 0.4.0
+# version: 0.4.1
 # authors: rio
 # url: https://github.com/rio/discourse-topic-cover
 # required_version: 3.5.0

@@ -2,7 +2,7 @@ en:
   js:
     topic_cover:
       label: "Cover image"
-      help: "Required. This image is used directly by topic cards and masonry layouts."
+      help: "The uploaded image is inserted into the post and used for topic cards and masonry layouts."
       in_post_alt: "Topic cover image"
       publishing: "Processing cover and publishing…"
       update_failed: "The cover image was uploaded, but the topic could not be updated."

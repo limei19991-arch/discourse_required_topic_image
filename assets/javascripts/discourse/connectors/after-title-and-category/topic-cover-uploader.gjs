@@ -5,6 +5,7 @@ import { service } from "@ember/service";
 import UppyImageUploader from "discourse/components/uppy-image-uploader";
 import { ajax } from "discourse/lib/ajax";
 import { popupAjaxError } from "discourse/lib/ajax-error";
+import { insertCoverIntoBody } from "../../lib/cover-body";
 import { i18n } from "discourse-i18n";
 
 const UPLOAD_ID_FIELD = "topic_cover_upload_id";
@@ -60,6 +61,25 @@ export default class TopicCoverUploader extends Component {
     });
   }
 
+  insertUploadedCover(upload) {
+    const url = upload.short_url || upload.url;
+    const safeUrl = url.replace(/[\s()<>]/g, (character) =>
+      encodeURIComponent(character)
+        .replace(/\(/g, "%28")
+        .replace(/\)/g, "%29")
+    );
+    const alt = i18n("topic_cover.in_post_alt").replace(/[\[\]\\\r\n]/g, " ");
+    const result = insertCoverIntoBody(
+      this.composer.reply,
+      `![${alt}](${safeUrl})`,
+      this.composer.topicCoverBodyMarkdown
+    );
+    this.composer.setProperties({
+      reply: result.raw,
+      topicCoverBodyMarkdown: result.markdown,
+    });
+  }
+
   @action
   async uploadDone(upload) {
     const previousId = this.coverUploadId;
@@ -70,6 +90,7 @@ export default class TopicCoverUploader extends Component {
     this.updateComposerPayload(upload.id, upload.url);
 
     if (!this.editingExistingTopic) {
+      this.insertUploadedCover(upload);
       return;
     }
 
@@ -82,6 +103,7 @@ export default class TopicCoverUploader extends Component {
       this.coverUploadId = result.topic_cover_upload_id;
       this.coverUrl = result.topic_cover_url;
       this.updateComposerPayload(this.coverUploadId, this.coverUrl);
+      this.insertUploadedCover(upload);
     } catch (error) {
       this.coverUploadId = previousId;
       this.coverUrl = previousUrl;

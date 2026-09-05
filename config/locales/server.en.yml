@@ -1,7 +1,7 @@
 en:
   site_settings:
     topic_cover_enabled: "Enable explicit topic cover images"
-    topic_cover_required: "Require a cover image when creating a regular topic"
+    topic_cover_required: "Require an eligible uploaded image in the body when creating or editing a topic's first post. Disable to allow imageless topics."
     topic_cover_min_width: "Minimum source cover width in pixels"
     topic_cover_min_height: "Minimum source cover height in pixels"
     topic_cover_max_width: "Maximum stored cover width in pixels"
@@ -9,5 +9,5 @@ en:
     topic_cover_image_quality: "WebP compression quality for stored covers"
   discourse_topic_cover:
     errors:
-      required: "A cover image is required."
+      required: "Use the editor toolbar to upload an image into the post body. At least one image must meet the cover size and ownership requirements."
       invalid: "The selected cover image is invalid or does not belong to you."

@@ -3,7 +3,7 @@
 # name: discourse-topic-cover
 # about: Adds a required, explicit cover image to Discourse topics.
 # meta_topic_id: 0
-# version: 0.2.1
+# version: 0.3.0
 # authors: rio
 # url: https://github.com/rio/discourse-topic-cover
 # required_version: 3.5.0
@@ -24,10 +24,7 @@ require_relative "lib/discourse_topic_cover/engine"
 
 after_initialize do
   require_relative "lib/discourse_topic_cover/upload_manager"
-  require_relative "lib/discourse_topic_cover/queued_post_support"
-
-  allow_new_queued_post_payload_attribute(:topic_opts)
-  ReviewableQueuedPost.prepend(DiscourseTopicCover::ReviewableQueuedPostExtension)
+  require_relative "lib/discourse_topic_cover/body_cover"
 
   register_editable_topic_custom_field(DiscourseTopicCover::UPLOAD_ID_FIELD)
   register_topic_custom_field_type(DiscourseTopicCover::UPLOAD_ID_FIELD, :integer)
@@ -48,41 +45,17 @@ after_initialize do
     next unless topic.regular?
     next if topic_creator.opts[:skip_validations]
 
-    custom_fields =
-      topic_creator.opts.dig(:topic_opts, :custom_fields) ||
-        topic_creator.opts[:custom_fields] ||
-        {}
-    upload_id =
-      custom_fields[DiscourseTopicCover::UPLOAD_ID_FIELD] ||
-        custom_fields[DiscourseTopicCover::UPLOAD_ID_FIELD.to_sym]
-
-    if upload_id.blank?
-      topic.errors.add(:base, I18n.t("discourse_topic_cover.errors.required")) if
-        SiteSetting.topic_cover_required
-      next
-    end
-
-    unless DiscourseTopicCover::UploadManager.valid_upload_for_user?(
-             upload_id,
-             topic_creator.user,
-           )
-      topic.errors.add(:base, I18n.t("discourse_topic_cover.errors.invalid"))
+    if SiteSetting.topic_cover_required &&
+         !DiscourseTopicCover::BodyCover.find(topic_creator.opts[:raw], topic_creator.user)
+      topic.errors.add(:base, I18n.t("discourse_topic_cover.errors.required"))
     end
   end
 
   on(:before_create_topic) do |topic, topic_creator|
     next unless topic.regular?
 
-    upload_id = topic.custom_fields[DiscourseTopicCover::UPLOAD_ID_FIELD]
-    next if upload_id.blank?
-
-    upload = DiscourseTopicCover::UploadManager.find_valid_upload(upload_id, topic_creator.user)
-    if upload
-      variant = DiscourseTopicCover::UploadManager.cover_variant(upload)
-      topic.custom_fields[DiscourseTopicCover::UPLOAD_URL_FIELD] = variant[:url]
-      topic.custom_fields[DiscourseTopicCover::UPLOAD_WIDTH_FIELD] = variant[:width]
-      topic.custom_fields[DiscourseTopicCover::UPLOAD_HEIGHT_FIELD] = variant[:height]
-    end
+    upload = DiscourseTopicCover::BodyCover.find(topic_creator.opts[:raw], topic_creator.user)
+    DiscourseTopicCover::BodyCover.apply(topic, upload)
   end
 
   on(:topic_created) do |topic|
@@ -95,8 +68,21 @@ after_initialize do
     end
   end
 
-  add_model_callback(ReviewableQueuedPost, :after_save) do
-    DiscourseTopicCover::QueuedPostSupport.ensure_upload_reference(self)
+  add_model_callback(Post, :validate) do
+    next unless persisted? && is_first_post? && topic&.regular? && will_save_change_to_raw?
+    if SiteSetting.topic_cover_required &&
+         !DiscourseTopicCover::BodyCover.find(raw, [user, last_editor])
+      errors.add(:base, I18n.t("discourse_topic_cover.errors.required"))
+    end
+  end
+
+  on(:post_edited) do |post|
+    next unless post.is_first_post? && post.topic&.regular?
+    topic = post.topic
+    upload = DiscourseTopicCover::BodyCover.find(post.raw, [post.user, post.last_editor])
+    DiscourseTopicCover::BodyCover.apply(topic, upload)
+    topic.save_custom_fields
+    DiscourseTopicCover::UploadManager.sync_reference!(topic)
   end
 
   add_to_serializer(:topic_list_item, :topic_cover_upload_id) do

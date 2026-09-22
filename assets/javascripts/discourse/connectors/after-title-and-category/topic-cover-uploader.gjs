@@ -1,7 +1,10 @@
 import Component from "@glimmer/component";
 import { tracked } from "@glimmer/tracking";
 import { action } from "@ember/object";
-import UppyImageUploader from "discourse/components/uppy-image-uploader";
+import { getOwner } from "@ember/owner";
+import UppyUpload from "discourse/lib/uppy/uppy-upload";
+import DButton from "discourse/ui-kit/d-button";
+import DPickFilesButton from "discourse/ui-kit/d-pick-files-button";
 import { i18n } from "discourse-i18n";
 import { insertCoverIntoBody } from "../../lib/cover-body";
 
@@ -15,6 +18,31 @@ export default class TopicCoverUploader extends Component {
 
   get composer() {
     return this.args.outletArgs.model;
+  }
+
+  get busy() {
+    return this.uploader.uploading || this.uploader.processing;
+  }
+
+  get buttonLabel() {
+    return this.coverUrl ? "topic_cover.replace" : "topic_cover.upload";
+  }
+
+  uploader = new UppyUpload(getOwner(this), {
+    id: "topic-cover-image-uploader",
+    type: "topic_cover",
+    maxFiles: 1,
+    validateUploadedFilesOptions: { imagesOnly: true },
+    uploadDone: (upload) => {
+      if (!this.isDestroying && !this.isDestroyed) {
+        this.uploadDone(upload);
+      }
+    },
+  });
+
+  willDestroy() {
+    this.uploader.teardown();
+    super.willDestroy(...arguments);
   }
 
   @action
@@ -32,24 +60,30 @@ export default class TopicCoverUploader extends Component {
     this.coverUrl = upload.url;
   }
 
-  @action
-  keepCover() {}
-
   <template>
     <div class="topic-cover-field">
-      <label class="topic-cover-field__label">
-        {{i18n "topic_cover.label"}}
-        <span class="topic-cover-field__required" aria-hidden="true">*</span>
-      </label>
-      <UppyImageUploader
-        @id="topic-cover-image-uploader"
-        @type="topic_cover"
-        @imageUrl={{this.coverUrl}}
-        @onUploadDone={{this.uploadDone}}
-        @onUploadDeleted={{this.keepCover}}
-        @previewSize="cover"
+      <DPickFilesButton
+        @registerFileInput={{this.uploader.setup}}
+        @fileInputDisabled={{this.busy}}
+        @acceptedFormatsOverride="image/*"
+        @fileInputId="topic-cover-file"
       />
-      <div class="topic-cover-field__help">{{i18n "topic_cover.help"}}</div>
+      <DButton
+        @action={{this.uploader.openPicker}}
+        @label={{this.buttonLabel}}
+        @disabled={{this.busy}}
+        class="btn-default btn-small topic-cover-upload-button"
+      />
+      {{#if this.coverUrl}}
+        <img class="topic-cover-field__thumbnail" src={{this.coverUrl}} alt={{i18n "topic_cover.in_post_alt"}} />
+      {{/if}}
+      <span class="topic-cover-field__help" role="status">
+        {{#if this.busy}}
+          {{i18n "topic_cover.uploading"}} {{this.uploader.uploadProgress}}%
+        {{else}}
+          {{i18n "topic_cover.help"}}
+        {{/if}}
+      </span>
     </div>
   </template>
 }

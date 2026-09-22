@@ -1,44 +1,41 @@
 .topic-cover-field {
   box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
   width: 100%;
-  margin-top: 0.5em;
-  padding: 0.5em 0.75em;
-  border: 1px solid var(--primary-low);
-  border-radius: var(--d-border-radius);
-  background: var(--secondary);
+  min-width: 0;
+  margin-block: 2px;
+  padding: 0;
 
-  &__label {
-    display: block;
-    margin-bottom: 0.35em;
-    font-weight: 600;
-  }
-
-  &__required {
-    color: var(--danger);
-  }
+  .pick-files-button { display: none; }
 
   &__help {
-    margin-top: 0.35em;
+    flex: 1 1 12rem;
+    min-width: 0;
     color: var(--primary-medium);
     font-size: var(--font-down-1);
+    white-space: normal;
+    overflow-wrap: anywhere;
+    line-height: 1.4;
   }
 
-  .file-uploader__preview {
-    width: min(100%, 8rem);
-    height: 3.5rem;
-    min-height: 0;
-    aspect-ratio: auto;
+  .topic-cover-upload-button {
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 4px 8px;
+    min-height: 28px;
+    line-height: 1.2;
+    white-space: nowrap;
   }
 
-  .file-uploader__controls .btn-transparent {
-    padding: 0.25em 0.4em;
-    font-size: var(--font-down-1);
-    line-height: 1.15;
-  }
-
-  // A cover is required. Existing covers can be replaced but not removed.
-  .file-uploader__controls .btn-danger {
-    display: none;
+  &__thumbnail {
+    flex: 0 0 auto;
+    width: 36px;
+    height: 28px;
+    object-fit: cover;
+    border-radius: var(--d-border-radius);
   }
 }
 
